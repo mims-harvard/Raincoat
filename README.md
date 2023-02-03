@@ -50,7 +50,7 @@ the training parameters.
 
 ## RAINCOAT
 ### Model
-Our main model architecture can be found [here](main/algorithms/TFAC.py). 
+Our main model architecture can be found [here](algorithms/RAINCOAT.py). 
 
 ### Algorithm 
 
