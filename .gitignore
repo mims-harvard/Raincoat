@@ -1,0 +1,17 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+experiments_logs/
+wandb/
+src_only_saved_models/
+**/*.ipynb_checkpoints/
+data/
+*.py[cod]
+*.pt
+*.txt
+*.arff
+*.png
+*.pkl
+*.pickle
+*.xlsx
+ 
