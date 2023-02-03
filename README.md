@@ -7,11 +7,10 @@
 - Pandas==1.2.4
 - skorch==0.10.0 
 - openpyxl==3.0.7 
-- Wandb=0.12.7 
 
 ## Datasets
 ### Loading and Preparing Benchmark Datasets
-Create a folder and download the pre-processed versions of the datasets [WISDM](https://researchdata.ntu.edu.sg/dataset.xhtml?persistentId=doi:10.21979/N9/KJWE5B), [HAR](https://researchdata.ntu.edu.sg/dataset.xhtml?persistentId=doi:10.21979/N9/0SYHTZ), [HHAR](https://researchdata.ntu.edu.sg/dataset.xhtml?persistentId=doi:10.21979/N9/OWDFXO), [Boiler](https://researchdata.ntu.edu.sg/dataset.xhtml?persistentId=doi:10.21979/N9/OWDFXO), and [Sleep-EDF](https://researchdata.ntu.edu.sg/dataset.xhtml?persistentId=doi:10.21979/N9/OWDFXO).
+Create a folder and download the pre-processed versions of the datasets [WISDM](https://researchdata.ntu.edu.sg/dataset.xhtml?persistentId=doi:10.21979/N9/KJWE5B), [HAR](https://researchdata.ntu.edu.sg/dataset.xhtml?persistentId=doi:10.21979/N9/0SYHTZ), [HHAR](https://researchdata.ntu.edu.sg/dataset.xhtml?persistentId=doi:10.21979/N9/OWDFXO), [Boiler](https://researchdata.https://github.com/DMIRLAB-Group/SASA/tree/main/datasets/Boiler), and [Sleep-EDF](https://researchdata.ntu.edu.sg/dataset.xhtml?persistentId=doi:10.21979/N9/UD1IM9).
 
 To add new dataset (*e.g.,* NewData), it should be placed in a folder named: NewData in the datasets directory.
 
@@ -42,17 +41,18 @@ the training parameters.
 
 ## Universal Domain Adaptation Algorithms
 ### Existing Algorithms
-- [UniDA](https://arxiv.org/abs/1607.01719)
-- [DANCE](https://arxiv.org/abs/1705.10667)
-- [OVANet](https://arxiv.org/abs/1705.10667)
-- [UniOT](https://arxiv.org/abs/1802.08735)
+- [UniDA](https://openaccess.thecvf.com/content_CVPR_2019/papers/You_Universal_Domain_Adaptation_CVPR_2019_paper.pdf)
+- [DANCE](https://cs-people.bu.edu/keisaito/research/DANCE.html)
+- [OVANet](https://arxiv.org/abs/2104.03344)
+- [UniOT](https://arxiv.org/abs/2210.17067)
 
 
 ## RAINCOAT
 ### Model
-Our main model architecture can be found [here](algorithms/RAINCOAT.py). 
+Our main model architecture can be found [here](models/models.py). 
 
 ### Algorithm 
+Our training algorithm can be found [here](algorithms/RAINCOAT.py). 
 
 ## Training procedure
 
