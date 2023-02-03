@@ -10,8 +10,9 @@
 - Wandb=0.12.7 
 
 ## Datasets
+### Loading and Preparing Benchmark Datasets
+Create a folder and download the pre-processed versions of the datasets [WISDM](https://researchdata.ntu.edu.sg/dataset.xhtml?persistentId=doi:10.21979/N9/KJWE5B), [HAR](https://researchdata.ntu.edu.sg/dataset.xhtml?persistentId=doi:10.21979/N9/0SYHTZ), [HHAR](https://researchdata.ntu.edu.sg/dataset.xhtml?persistentId=doi:10.21979/N9/OWDFXO), [Boiler](https://researchdata.ntu.edu.sg/dataset.xhtml?persistentId=doi:10.21979/N9/OWDFXO), and [Sleep-EDF](https://researchdata.ntu.edu.sg/dataset.xhtml?persistentId=doi:10.21979/N9/OWDFXO).
 
-#### Structure of data
 To add new dataset (*e.g.,* NewData), it should be placed in a folder named: NewData in the datasets directory.
 
 Since "NewData" has several domains, each domain should be split into train/test splits with naming style as
@@ -29,22 +30,23 @@ Last, you have to add another class with the name NewData in the `configs/hparam
 the training parameters.
 
 
-## Domain Adaptation Algorithms
-### Existing Algorithms
+## Closed-Set Domain Adaptation Algorithms
+### Baselines
 - [Deep Coral](https://arxiv.org/abs/1607.01719)
-- [MMDA](https://arxiv.org/abs/1901.00282)
-- [DANN](https://arxiv.org/abs/1505.07818)
 - [CDAN](https://arxiv.org/abs/1705.10667)
 - [DIRT-T](https://arxiv.org/abs/1802.08735)
-- [DSAN](https://ieeexplore.ieee.org/document/9085896)
 - [HoMM](https://arxiv.org/pdf/1912.11976.pdf)
-- [DDC](https://arxiv.org/abs/1412.3474)
 - [CoDATS](https://arxiv.org/pdf/2005.10996.pdf)
 - [AdvSKM](https://www.ijcai.org/proceedings/2021/0378.pdf)
+- [CLUDA](https://www.ijcai.org/proceedings/2021/0378.pdf)
 
+## Universal Domain Adaptation Algorithms
+### Existing Algorithms
+- [UniDA](https://arxiv.org/abs/1607.01719)
+- [DANCE](https://arxiv.org/abs/1705.10667)
+- [OVANet](https://arxiv.org/abs/1705.10667)
+- [UniOT](https://arxiv.org/abs/1802.08735)
 
-### Adding New Algorithm
-To add a new algorithm, place it in `algorithms/algorithms.py` file.
 
 
 ## Training procedure
