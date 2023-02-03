@@ -48,6 +48,11 @@ the training parameters.
 - [UniOT](https://arxiv.org/abs/1802.08735)
 
 
+## RAINCOAT
+### Model
+Our main model architecture can be found [here](main/algorithms/TFAC.py). 
+
+### Algorithm 
 
 ## Training procedure
 
@@ -68,21 +73,4 @@ python main.py  --experiment_description exp1  \
                 --dataset HHAR \
                 --backbone CNN \
                 --num_runs 5 \
-                --is_sweep False
 ```
-### Launching a sweep
-Sweeps here are deployed on [Wandb](https://wandb.ai/), which makes it easier for visualization, following the training progress, organizing sweeps, and collecting results.
-
-```
-python main.py  --experiment_description exp1_sweep  \
-                --run_description sweep_over_lr \
-                --da_method DANN \
-                --dataset HHAR \
-                --backbone CNN \
-                --num_runs 5 \
-                --is_sweep True \
-                --num_sweeps 50 \
-                --sweep_project_wandb TEST
-```
-Upon the run, you will find the running progress in the specified project page in wandb.
-
