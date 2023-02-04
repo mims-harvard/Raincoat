@@ -1,27 +1,23 @@
 import torch
 import torch.nn.functional as F
-
 import os
 import pandas as pd
 import numpy as np
+import warnings
+import sklearn.exceptions
+warnings.filterwarnings("ignore", category=sklearn.exceptions.UndefinedMetricWarning)
+import collections
+import argparse
+
 from dataloader.dataloader import data_generator, few_shot_data_generator
 from configs.data_model_configs import get_dataset_class
 from configs.hparams import get_hparams_class
-
 from configs.sweep_params import sweep_alg_hparams
 from utils import fix_randomness, copy_Files, starting_logs, save_checkpoint, _calc_metrics
-from utils import calc_dev_risk, calculate_risk
-import warnings
-
-import sklearn.exceptions
-
-warnings.filterwarnings("ignore", category=sklearn.exceptions.UndefinedMetricWarning)
-
-import collections
 from algorithms.algorithms import get_algorithm_class
 from models.models import get_backbone_class
 from utils import AverageMeter
-import argparse
+
 
 torch.backends.cudnn.benchmark = True  # to fasten TCN
 
@@ -30,7 +26,6 @@ class same_domain_Trainer(object):
     """
    This class contain the main training functions for our pretrainer
     """
-
     def __init__(self, args):
         self.da_method = args.da_method  # Selected  DA Method
         self.data_type = args.selected_dataset  # Selected  Dataset

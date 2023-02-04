@@ -29,15 +29,5 @@ def permutation(x, max_segments=5, seg_mode="random"):
 
 
 def scaling(x, sigma=0.1):
-    # TODO: this was coded based on https://github.com/mims-harvard/TFC-pretraining/blob/main/code/augmentations.py#L88-L95
-    # however I have two concerns:
-    #  1. should the mean should be 1, not 2, so that on average the magnitude of the data is not changed when sigma = 0?
-    #  2. should the shape of the scale should probably be such that the scale remains the same over the time domain,
-    #      e.g. torch.randn(1, 1, x.shape[2]) ?
-    
-    # one random scale per time step, mu = 2
     scale = torch.randn(x.shape[0], 1, x.shape[2], device=x.device) * sigma + 2
-
-    # one random scale per channel, mu = 1
-    # scale = torch.randn(x.shape[0], x.shape[1], 1, device=x.device) * sigma + 1
     return x * scale
