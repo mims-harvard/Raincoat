@@ -118,15 +118,10 @@ class tf_encoder(nn.Module):
     def forward(self, x):
 
         ef, out_ft = self.conv0(x)
-        # print(ef.shape)
         ef = self.nn2(self.con1(ef).squeeze())
-        
-        # print(ef.shape)
-        # ef = self.lin(ef)
         et = self.cnn(x)
         f = torch.concat([ef,et],-1)
-        self.recons = out_ft
-        return F.normalize(self.lin(f))
+        return F.normalize(f)
 
 class tf_decoder(nn.Module):
     def __init__(self, configs):
