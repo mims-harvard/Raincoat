@@ -21,7 +21,7 @@ parser.add_argument('--da_method',              default='RAINCOAT',             
 
 # ========= Select the DATASET ==============
 parser.add_argument('--data_path',              default=r'./data',                  type=str, help='Path containing dataset')
-parser.add_argument('--dataset',                default='EEG',                      type=str, help='Dataset of choice: (WISDM - EEG - HAR - HHAR_SA, Boiler)')
+parser.add_argument('--dataset',                default='WISDM',                      type=str, help='Dataset of choice: (WISDM - EEG - HAR - HHAR_SA, Boiler)')
 
 # ========= Select the BACKBONE ==============
 parser.add_argument('--backbone',               default='CNN',                      type=str, help='Backbone of choice: (CNN - RESNET18 - TCN)')

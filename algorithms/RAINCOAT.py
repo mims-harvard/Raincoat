@@ -53,8 +53,8 @@ class SpectralConv1d(nn.Module):
         out_ft[:, :, :self.modes1] = self.compl_mul1d(x_ft[:, :, :self.modes1], self.weights1) 
         r = out_ft[:, :, :self.modes1].abs()
         p = out_ft[:, :, :self.modes1].angle() 
-        return torch.concat([r,p],-1), out_ft
-        # return r, out_ft
+        # return torch.concat([r,p],-1), out_ft
+        return r, out_ft
 
 
 class CNN(nn.Module):
@@ -107,24 +107,26 @@ class tf_encoder(nn.Module):
         self.fl =   configs.sequence_len
         self.fc0 = nn.Linear(self.channel, self.width) # input channel is 2: (a(x), x)
         self.conv0 = SpectralConv1d(self.width, self.width, self.modes1,self.fl)
-        self.nn2 = nn.LayerNorm([self.modes1])
+        self.nn2 = nn.LayerNorm(self.modes1)
         self.adaptive_pool = nn.AdaptiveAvgPool1d(1)
         self.cnn = CNN(configs).to('cuda')
         self.con1 = nn.Conv1d(self.width, 1, kernel_size=3 ,
                   stride=configs.stride, bias=False, padding=(3 // 2))
-        self.lin = nn.Linear(self.modes1, configs.final_out_channels)
-        
+        self.lin = nn.Linear(self.modes1+configs.final_out_channels, configs.out_dim)
+        self.recons = None
+
     def forward(self, x):
 
         ef, out_ft = self.conv0(x)
+        # print(ef.shape)
         ef = self.nn2(self.con1(ef).squeeze())
         
         # print(ef.shape)
         # ef = self.lin(ef)
         et = self.cnn(x)
         f = torch.concat([ef,et],-1)
-        
-        return F.normalize(f), out_ft
+        self.recons = out_ft
+        return F.normalize(self.lin(f))
 
 class tf_decoder(nn.Module):
     def __init__(self, configs):
@@ -161,49 +163,22 @@ class tf_decoder(nn.Module):
         # x_high = self.nn2(F.relu(self.convT(time.unsqueeze(2))).permute(0,2,1))
         return x_low + x_high
 
-class OrthogonalProjectionLoss(nn.Module):
-    def __init__(self, gamma=0.5):
-        super(OrthogonalProjectionLoss, self).__init__()
-        self.gamma = gamma
-
-    def forward(self, features, labels=None):
-        device = (torch.device('cuda') if features.is_cuda else torch.device('cpu'))
-
-        #  features are normalized
-        # features = F.normalize(features, p=2, dim=1)
-
-        labels = labels[:, None]  # extend dim
-
-        mask = torch.eq(labels, labels.t()).bool().to(device)
-        eye = torch.eye(mask.shape[0], mask.shape[1]).bool().to(device)
-
-        mask_pos = mask.masked_fill(eye, 0).float()
-        mask_neg = (~mask).float()
-        dot_prod = torch.matmul(features, features.t())
-
-        pos_pairs_mean = (mask_pos * dot_prod).sum() / (mask_pos.sum() + 1e-6)
-        neg_pairs_mean = (mask_neg * dot_prod).sum() / (mask_neg.sum() + 1e-6)  # TODO: removed abs
-
-        loss = (1.0 - pos_pairs_mean) + self.gamma * neg_pairs_mean
-
-        return loss
-
 class RAINCOAT(Algorithm):
     def __init__(self, configs, hparams, device):
         super(RAINCOAT, self).__init__(configs)
-        self.encoder = tf_encoder(configs).to(device)
+        self.feature_extractor = tf_encoder(configs).to(device)
         self.decoder = tf_decoder(configs).to(device)
         self.classifier = classifier(configs).to(device)
         
         self.optimizer = torch.optim.Adam(
-            list(self.encoder.parameters()) + \
+            list(self.feature_extractor.parameters()) + \
                 # list(self.decoder.parameters())+\
                 list(self.classifier.parameters()),
             lr=hparams["learning_rate"],
             weight_decay=hparams["weight_decay"]
         )
         self.coptimizer = torch.optim.Adam(
-            list(self.encoder.parameters())+list(self.decoder.parameters()),
+            list(self.feature_extractor.parameters())+list(self.decoder.parameters()),
             lr=0.5*hparams["learning_rate"],
             weight_decay=hparams["weight_decay"]
         )
@@ -212,14 +187,14 @@ class RAINCOAT(Algorithm):
         self.recons = nn.L1Loss(reduction='sum').to(device)
         self.pi = torch.acos(torch.zeros(1)).item() * 2
         self.loss_func = losses.ContrastiveLoss(pos_margin=0.5)
-        self.sink = SinkhornDistance(eps=1e-3, max_iter=500, reduction='sum')
+        self.sink = SinkhornDistance(eps=1e-3, max_iter=1000, reduction='sum')
         
     def update(self, src_x, src_y, trg_x):
   
         self.optimizer.zero_grad()
-        src_feat, out = self.encoder(src_x)
-        trg_feat, out = self.encoder(trg_x)
-        # src_recon = self.decoder(src_feat, out)
+        src_feat = self.feature_extractor(src_x)
+        trg_feat = self.feature_extractor(trg_x)
+        # src_recon = self.decoder(src_feat, self.feature_extractor.recons)
         # trg_recon = self.decoder(trg_feat, out)
         # recons = 1e-4*(self.recons(src_recon, src_x) + self.recons(trg_recon, src_x))
         # recons.backward(retain_graph=True)
