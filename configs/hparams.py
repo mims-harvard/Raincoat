@@ -17,7 +17,7 @@ class HAR():
 
         }
         self.alg_hparams = {
-            'TFAC':       {'learning_rate':5e-4,     'src_cls_loss_wt': 0.5,    'domain_loss_wt': 0.5},
+            'RAINCOAT':       {'learning_rate':5e-4,     'src_cls_loss_wt': 0.5,    'domain_loss_wt': 0.5},
             'DANN':         {'learning_rate': 1e-2, 'src_cls_loss_wt': 9.74, 'domain_loss_wt': 5.43},
             'Deep_Coral':   {'learning_rate': 5e-3, 'src_cls_loss_wt': 8.67, 'coral_wt': 0.44},
             'DDC':          {'learning_rate': 5e-3, 'src_cls_loss_wt': 6.24, 'domain_loss_wt': 6.36},
@@ -42,7 +42,7 @@ class EEG():
 
         }
         self.alg_hparams = {
-            'TFAC':       {'learning_rate':0.002,     'src_cls_loss_wt': 0.5,    'domain_loss_wt': 0.5},
+            'RAINCOAT':       {'learning_rate':0.002,     'src_cls_loss_wt': 0.5,    'domain_loss_wt': 0.5},
              "AdaMatch":      {'learning_rate': 0.0005,     'tau': 0.9, 'max_segments': 5, 'jitter_scale_ratio': 0.01, 'jitter_ratio': 0.2},
             'DANN':         {'learning_rate': 0.0005,   'src_cls_loss_wt': 8.30,    'domain_loss_wt': 0.324, },
             'Deep_Coral':   {'learning_rate': 0.0005,   'src_cls_loss_wt': 9.39,    'coral_wt': 0.19, },
@@ -78,7 +78,7 @@ class WISDM():
             "AdaMatch":      {'learning_rate': 3e-3,     'tau': 0.9, 'max_segments': 5, 'jitter_scale_ratio': 0.01, 'jitter_ratio': 0.2},
             'CDAN':         {'learning_rate': 1e-3,     'src_cls_loss_wt': 9.54,    'domain_loss_wt': 3.283,        'cond_ent_wt': 0.1},
             'DIRT':         {'learning_rate': 1e-3,     'src_cls_loss_wt': 0.5,     'domain_loss_wt': 0.5,          'cond_ent_wt': 0.1, 'vat_loss_wt': 0.1},
-            'TFAC':       {'learning_rate':1e-3,     'src_cls_loss_wt': 0.5,    'domain_loss_wt': 0.5},
+            'RAINCOAT':       {'learning_rate':1e-3,     'src_cls_loss_wt': 0.5,    'domain_loss_wt': 0.5},
             "DANCE":        {'learning_rate': 1e-3,    'momentum': 0.5, 'eta': 0.05, "thr": 1.71,   "margin": 0.5, 'temp': 0.05}
         }
 
@@ -93,7 +93,7 @@ class HHAR_SA():
                 'weight_decay': 1e-4,
         }
         self.alg_hparams = {
-            'TFAC':       {'learning_rate':0.001,     'src_cls_loss_wt': 0.5,    'domain_loss_wt': 0.5},
+            'RAINCOAT':       {'learning_rate':0.001,     'src_cls_loss_wt': 0.5,    'domain_loss_wt': 0.5},
             'DANN':         {'learning_rate': 0.0005,   'src_cls_loss_wt': 0.9603,  'domain_loss_wt':0.9238},
             'Deep_Coral':   {'learning_rate': 0.0005,   'src_cls_loss_wt': 0.05931, 'coral_wt': 8.452},
             'DDC':          {'learning_rate': 0.01,     'src_cls_loss_wt':  0.1593, 'domain_loss_wt': 0.2048},
@@ -117,6 +117,7 @@ class Boiler():
                 'weight_decay': 1e-4,
         }
         self.alg_hparams = {
+            'RAINCOAT':         {'learning_rate': 0.0005,   'src_cls_loss_wt': 0.9603,  'domain_loss_wt':0.9238},
             'DANN':         {'learning_rate': 0.0005,   'src_cls_loss_wt': 0.9603,  'domain_loss_wt':0.9238},
             'Deep_Coral':   {'learning_rate': 0.0005,   'src_cls_loss_wt': 0.05931, 'coral_wt': 8.452},
             'DDC':          {'learning_rate': 0.01,     'src_cls_loss_wt':  0.1593, 'domain_loss_wt': 0.2048},

@@ -13,11 +13,12 @@ from dataloader.dataloader import data_generator, few_shot_data_generator, gener
 from configs.data_model_configs import get_dataset_class
 from configs.hparams import get_hparams_class
 from configs.sweep_params import sweep_alg_hparams
-from utils import fix_randomness, copy_Files, starting_logs, save_checkpoint, _calc_metrics
-from utils import calc_dev_risk, calculate_risk
+from algorithms.utils import fix_randomness, copy_Files, starting_logs, save_checkpoint, _calc_metrics
+from algorithms.utils import calc_dev_risk, calculate_risk
 from algorithms.algorithms import get_algorithm_class
+from algorithms.RAINCOAT import RAINCOAT
 from models.models import get_backbone_class
-from utils import AverageMeter
+from algorithms.utils import AverageMeter
 from sklearn.metrics import f1_score
 torch.backends.cudnn.benchmark = True  
 np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)        
@@ -63,7 +64,6 @@ class cross_domain_trainer(object):
         # Logging
         self.exp_log_dir = os.path.join(self.save_dir, self.experiment_description, run_name)
         os.makedirs(self.exp_log_dir, exist_ok=True)
-        copy_Files(self.exp_log_dir)  # save a copy of training files:
 
         scenarios = self.dataset_configs.scenarios  # return the scenarios given a specific dataset.
         df_a = pd.DataFrame(columns=['scenario','run_id','accuracy','f1','H-score'])
@@ -86,10 +86,13 @@ class cross_domain_trainer(object):
                 self.load_data(src_id, trg_id)
                 
                 # get algorithm
-                algorithm_class = get_algorithm_class(self.da_method)
+                
                 backbone_fe = get_backbone_class(self.backbone)
-
-                algorithm = algorithm_class(backbone_fe, self.dataset_configs, self.hparams, self.device)
+                if self.da_method == 'RAINCOAT':
+                    algorithm = RAINCOAT(self.dataset_configs, self.hparams, self.device)
+                else:
+                    algorithm_class = get_algorithm_class(self.da_method)
+                    algorithm = algorithm_class(backbone_fe, self.dataset_configs, self.hparams, self.device)
                 algorithm.to(self.device)
                 self.algorithm = algorithm
                 # Average meters

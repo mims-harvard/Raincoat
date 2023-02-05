@@ -4,9 +4,8 @@ import numpy as np
 import torch.nn.functional as F
 from models.models import classifier, ReverseLayerF, Discriminator, RandomLayer, Discriminator_CDAN, \
     codats_classifier, AdvSKM_Disc
-from models.loss import MMD_loss, CORAL, ConditionalEntropyLoss, VAT, LMMD_loss, HoMM_loss, NT_Xent
+from models.loss import MMD_loss, CORAL, ConditionalEntropyLoss, VAT, LMMD_loss, HoMM_loss
 from models.augmentations import jitter, scaling, permutation
-from utils import EMA, EMA2
 
 
 def get_algorithm_class(algorithm_name):
@@ -310,10 +309,6 @@ class AdaMatch(Algorithm):
         mu = 0.5 - torch.cos(torch.minimum(pi, (2 * pi * current_step) / total_steps)) / 2
         loss = src_loss + (mu * trg_loss)
         
-        # NOTE: seems to do better without scaling the trg loss over time
-        # TODO: still might want to weight losses differently
-        # loss = src_loss + trg_loss
-
 
         self.optimizer.zero_grad()
         loss.backward()
@@ -607,9 +602,6 @@ class DIRT(Algorithm):
 
         # device for further usage
         self.device = device
-
-        self.ema = EMA(0.998)
-        self.ema.register(self.network)
 
     def update(self, src_x, src_y, trg_x):
         # prepare true domain labels

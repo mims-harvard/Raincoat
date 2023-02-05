@@ -3,7 +3,6 @@ import torch.nn as nn
 import numpy as np
 import torch.nn.functional as F
 from models.loss import SinkhornDistance
-from utils import EMA, EMA2
 from pytorch_metric_learning import losses
 from models.models import ResClassifier_MME, classifier
 
@@ -47,15 +46,15 @@ class SpectralConv1d(nn.Module):
     def forward(self, x):
         batchsize = x.shape[0]
         #Compute Fourier coeffcients up to factor of e^(- something constant)
-        # x = torch.cos(x)
-        x = self.hann * x
+        x = torch.cos(x)
+        # x = self.hann * x
         x_ft = torch.fft.rfft(x,norm='ortho')
         out_ft = torch.zeros(batchsize, self.out_channels, x.size(-1)//2 + 1,  device=x.device, dtype=torch.cfloat)
         out_ft[:, :, :self.modes1] = self.compl_mul1d(x_ft[:, :, :self.modes1], self.weights1) 
         r = out_ft[:, :, :self.modes1].abs()
         p = out_ft[:, :, :self.modes1].angle() 
-        # return torch.concat([r,p],-1), out_ft
-        return r, out_ft
+        return torch.concat([r,p],-1), out_ft
+        # return r, out_ft
 
 
 class CNN(nn.Module):
@@ -189,12 +188,9 @@ class OrthogonalProjectionLoss(nn.Module):
 
         return loss
 
-class TFAC(Algorithm):
-    """
-    TFAC: Time Frequency Domain Adaptation with Correct
-    """
+class RAINCOAT(Algorithm):
     def __init__(self, configs, hparams, device):
-        super(TFAC, self).__init__(configs)
+        super(RAINCOAT, self).__init__(configs)
         self.encoder = tf_encoder(configs).to(device)
         self.decoder = tf_decoder(configs).to(device)
         self.classifier = classifier(configs).to(device)

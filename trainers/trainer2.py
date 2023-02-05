@@ -13,7 +13,7 @@ from dataloader.dataloader import data_generator, few_shot_data_generator, gener
 from configs.data_model_configs import get_dataset_class
 from configs.hparams import get_hparams_class
 from utils import fix_randomness, copy_Files, starting_logs, save_checkpoint, calculate_risk_ours, _calc_metrics
-from algorithms.TFAC import TFAC
+from algorithms.RAINCOAT import RAINCOAT
 from models.models import get_backbone_class
 from utils import AverageMeter
 from sklearn.metrics import f1_score
@@ -81,7 +81,7 @@ class cross_domain_trainer_ours(object):
                 self.load_data(src_id, trg_id)
                 
                 # get algorithm
-                algorithm = TFAC(self.dataset_configs, self.hparams, self.device)
+                algorithm = RAINCOAT(self.dataset_configs, self.hparams, self.device)
                 algorithm.to(self.device)
                 self.algorithm = algorithm
                 # Average meters
