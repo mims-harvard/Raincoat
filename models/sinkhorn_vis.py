@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Nov 18 00:46:57 2022
 
-@author: Huan
-"""
 
 import matplotlib.pyplot as plt
 import seaborn as sns

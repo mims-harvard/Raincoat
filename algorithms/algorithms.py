@@ -6,7 +6,7 @@ from models.models import classifier, ReverseLayerF, Discriminator, RandomLayer,
     codats_classifier, AdvSKM_Disc
 from models.loss import MMD_loss, CORAL, ConditionalEntropyLoss, VAT, LMMD_loss, HoMM_loss
 from models.augmentations import jitter, scaling, permutation
-
+from torch.optim import SGD
 
 def get_algorithm_class(algorithm_name):
     """Return the algorithm class with the given name."""
@@ -298,7 +298,7 @@ class OVANet(Algorithm):
                 'open_src_neg_loss': open_loss_neg.item(),
                 'open_trg_loss': ent_open.item()
                }
-               
+
 class AdaMatch(Algorithm):
     """
     AdaMatch https://arxiv.org/abs/2106.04732
