@@ -118,19 +118,40 @@ class cross_domain_trainer(object):
 
                     # logging
                     self.logger.debug(f'[Epoch : {epoch}/{self.hparams["num_epochs"]}]')
-                    acc, f1 = self.evaluate()
+                    if self.da_method =='RAINCOAT':
+                        acc, f1 = self.eval()
+                    else:
+                        acc, f1 = self.evaluate()
                     if f1>=self.best_acc:
                         self.best_acc = f1
                         print(self.best_acc)
                         torch.save(self.algorithm.feature_extractor.state_dict(), self.fpath)
                         torch.save(self.algorithm.classifier.state_dict(), self.cpath)
-                self.algorithm = algorithm
-                save_checkpoint(self.home_path, self.algorithm, scenarios, self.dataset_configs,
-                                self.scenario_log_dir, self.hparams)
-                acc, f1 = self.evaluate(final=True)
+                # self.algorithm = algorithm
+                # save_checkpoint(self.home_path, self.algorithm, scenarios, self.dataset_configs,
+                #                 self.scenario_log_dir, self.hparams)
+                # acc, f1 = self.evaluate(final=True)
+                # log = {'scenario':i,'run_id':run_id,'accuracy':acc,'f1':f1}
+                # df_a = df_a.append(log, ignore_index=True)
+            if  self.da_method == 'RAINCOAT':
+                print("===== Correct ====")
+                for epoch in range(1, self.hparams["num_epochs"] + 1):
+                    joint_loaders = enumerate(zip(self.src_train_dl, self.trg_train_dl))
+                    len_dataloader = min(len(self.src_train_dl), len(self.trg_train_dl))
+                    algorithm.train()
+                    for step, ((src_x, src_y), (trg_x, _)) in joint_loaders:
+                        src_x, src_y, trg_x = src_x.float().to(self.device), src_y.long().to(self.device), \
+                                              trg_x.float().to(self.device)
+                        algorithm.correct(src_x, src_y, trg_x)
+                    acc, f1 = self.eval()
+                    if f1>=self.best_acc:
+                        self.best_acc = f1
+                        print(self.best_acc)
+                        torch.save(self.algorithm.feature_extractor.state_dict(), self.fpath)
+                        torch.save(self.algorithm.classifier.state_dict(), self.cpath)
+                acc, f1 = self.eval(final=True)
                 log = {'scenario':i,'run_id':run_id,'accuracy':acc,'f1':f1}
                 df_a = df_a.append(log, ignore_index=True)
-        
         mean_acc, std_acc, mean_f1, std_f1 = self.avg_result(df_a,'average_align.csv')
         log = {'scenario':mean_acc,'run_id':std_acc,'accuracy':mean_f1,'f1':std_f1}
         df_a = df_a.append(log, ignore_index=True)
@@ -192,6 +213,44 @@ class cross_domain_trainer(object):
 
                 # forward pass
                 features = feature_extractor(data)
+                predictions = classifier(features)
+
+                # compute loss
+                loss = F.cross_entropy(predictions, labels)
+                total_loss_.append(loss.item())
+                pred = predictions.detach().argmax(dim=1)  # get the index of the max log-probability
+
+                self.trg_pred_labels = np.append(self.trg_pred_labels, pred.cpu().numpy())
+                self.trg_true_labels = np.append(self.trg_true_labels, labels.data.cpu().numpy())
+        accuracy = accuracy_score(self.trg_true_labels, self.trg_pred_labels)
+        f1 = f1_score(self.trg_pred_labels, self.trg_true_labels, pos_label=None, average="macro")
+        return accuracy*100, f1
+
+    def eval(self, final=False):
+        feature_extractor = self.algorithm.feature_extractor.to(self.device)
+        classifier = self.algorithm.classifier.to(self.device)
+        # self.algorithm.ema.apply_shadow()
+        # # evaluate
+        # self.algorithm.ema.restore()
+        if final == True:
+            feature_extractor.load_state_dict(torch.load(self.fpath))
+            classifier.load_state_dict(torch.load(self.cpath))
+        feature_extractor.eval()
+        classifier.eval()
+
+        total_loss_ = []
+
+        self.trg_pred_labels = np.array([])
+        self.trg_true_labels = np.array([])
+
+        with torch.no_grad():
+            # for data, labels in self.trg_test_dl:
+            for data, labels in self.trg_test_dl:
+                data = data.float().to(self.device)
+                labels = labels.view((-1)).long().to(self.device)
+
+                # forward pass
+                features,_ = feature_extractor(data)
                 predictions = classifier(features)
 
                 # compute loss

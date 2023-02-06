@@ -13,15 +13,15 @@ parser = argparse.ArgumentParser()
 
 # ========  Experiments Name ================
 parser.add_argument('--save_dir',               default='experiments_logs',         type=str, help='Directory containing all experiments')
-parser.add_argument('--experiment_description', default='WISDM-RAINCOAT',               type=str, help='Name of your experiment (EEG, HAR, HHAR_SA, WISDM')
-parser.add_argument('--run_description',        default='WISDM-RAINCOAT',                     type=str, help='name of your runs')
+parser.add_argument('--experiment_description', default='HAR-RAINCOAT',               type=str, help='Name of your experiment (EEG, HAR, HHAR_SA, WISDM')
+parser.add_argument('--run_description',        default='HAR-RAINCOAT',                     type=str, help='name of your runs')
 
 # ========= Select the DA methods ============
 parser.add_argument('--da_method',              default='RAINCOAT',               type=str, help='DANN, Deep_Coral, RAINCOAT, MMDA, VADA, DIRT, CDAN, AdaMatch, HoMM, CoDATS')
 
 # ========= Select the DATASET ==============
 parser.add_argument('--data_path',              default=r'./data',                  type=str, help='Path containing dataset')
-parser.add_argument('--dataset',                default='WISDM',                      type=str, help='Dataset of choice: (WISDM - EEG - HAR - HHAR_SA, Boiler)')
+parser.add_argument('--dataset',                default='HAR',                      type=str, help='Dataset of choice: (WISDM - EEG - HAR - HHAR_SA, Boiler)')
 
 # ========= Select the BACKBONE ==============
 parser.add_argument('--backbone',               default='CNN',                      type=str, help='Backbone of choice: (CNN - RESNET18 - TCN)')

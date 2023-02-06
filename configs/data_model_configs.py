@@ -24,7 +24,7 @@ class HAR():
         self.dropout = 0.5
         self.num_classes = 6
         self.fourier_modes = 64
-        self.out_dim = 128
+        self.out_dim = 192
         # CNN and RESNET features
         
         self.mid_channels = 64

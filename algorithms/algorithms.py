@@ -186,7 +186,119 @@ class DANCE(Algorithm):
 
         return {'total_loss': loss.item(), 'src_loss': src_loss.item(), 'loss_nc': loss_nc.item(), 'loss_ent': loss_nc.item()}
 
+
+class OVANet(Algorithm):
+    """
+    OVANet https://arxiv.org/pdf/2104.03344v3.pdf
+    Based on PyTorch implementation: https://github.com/VisionLearningGroup/OVANet
+    """
+    def __init__(self, backbone_fe, configs, hparams, device):
+        super().__init__(configs)
         
+        self.device = device
+        self.hparams = hparams
+        self.criterion = nn.CrossEntropyLoss()
+        
+        self.feature_extractor = backbone_fe(configs) # G
+        self.classifier1 = classifier(configs) # C1
+        
+        configs2 = configs
+        configs2.num_classes = configs.num_classes * 2
+        
+        self.classifier2 = classifier(configs2) # C2
+        
+        self.feature_extractor.to(device)
+        self.classifier1.to(device)
+        self.classifier2.to(device)
+        
+        self.opt_g = SGD(self.feature_extractor.parameters(), momentum=self.hparams['sgd_momentum'],
+                         lr = self.hparams['learning_rate'], weight_decay=0.0005, nesterov=True)
+        self.opt_c = SGD(list(self.classifier1.parameters()) + list(self.classifier2.parameters()), lr=1.0,
+                           momentum=self.hparams['sgd_momentum'], weight_decay=0.0005,
+                           nesterov=True)
+        
+        param_lr_g = []
+        for param_group in self.opt_g.param_groups:
+            param_lr_g.append(param_group["lr"])
+        param_lr_c = []
+        for param_group in self.opt_c.param_groups:
+            param_lr_c.append(param_group["lr"])
+        
+        self.param_lr_g = param_lr_g
+        self.param_lr_c = param_lr_c
+
+    
+    @staticmethod
+    def _inv_lr_scheduler(param_lr, optimizer, iter_num, gamma=10,
+                     power=0.75, init_lr=0.001,weight_decay=0.0005,
+                     max_iter=10000):
+        #10000
+        """Decay learning rate by a factor of 0.1 every lr_decay_epoch epochs."""
+        #max_iter = 10000
+        gamma = 10.0
+        lr = init_lr * (1 + gamma * min(1.0, iter_num / max_iter)) ** (-power)
+        i=0
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = lr * param_lr[i]
+            i+=1
+        return lr
+
+    def update(self, src_x, src_y, trg_x, step, epoch, len_train_source, len_train_target):
+        
+        # Applying classifier network => replacing G, C2 in paper
+        self.feature_extractor.train()
+        self.classifier1.train()
+        self.classifier2.train()
+        
+        self._inv_lr_scheduler(self.param_lr_g, self.opt_g, step,
+                         init_lr=self.hparams['learning_rate'],
+                         max_iter=self.hparams['min_step'])
+        self._inv_lr_scheduler(self.param_lr_c, self.opt_c, step,
+                         init_lr=self.hparams['learning_rate'],
+                         max_iter=self.hparams['min_step'])
+        
+        self.opt_g.zero_grad()
+        self.opt_c.zero_grad()
+        
+#         self.classifier2.weight_norm()
+        
+        ## Source loss calculation
+        out_s = self.classifier1(self.feature_extractor(src_x))
+        out_open = self.classifier2(self.feature_extractor(src_x))
+
+        ## source classification loss
+        loss_s = self.criterion(out_s, src_y)
+        ## open set loss for source
+        out_open = out_open.view(out_s.size(0), 2, -1)
+        open_loss_pos, open_loss_neg = ova_loss(out_open, src_y)
+        ## b x 2 x C
+        loss_open = 0.5 * (open_loss_pos + open_loss_neg)
+        ## open set loss for target
+        all = loss_s + loss_open
+        
+        # OEM - Open Entropy Minimization
+        no_adapt = False
+        if not no_adapt: # TODO: Figure out if this needs to be altered
+            out_open_t = self.classifier2(self.feature_extractor(trg_x))
+            out_open_t = out_open_t.view(trg_x.size(0), 2, -1)
+
+            ent_open = open_entropy(out_open_t)
+            all += self.hparams['multi'] * ent_open
+        
+        all.backward()
+        
+        self.opt_g.step()
+        self.opt_c.step()
+        self.opt_g.zero_grad()
+        self.opt_c.zero_grad()
+
+        return {'src_loss': loss_s.item(),
+                'open_loss': loss_open.item(), 
+                'open_src_pos_loss': open_loss_pos.item(),
+                'open_src_neg_loss': open_loss_neg.item(),
+                'open_trg_loss': ent_open.item()
+               }
+               
 class AdaMatch(Algorithm):
     """
     AdaMatch https://arxiv.org/abs/2106.04732

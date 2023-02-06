@@ -121,15 +121,15 @@ class tf_encoder(nn.Module):
         ef = self.nn2(self.con1(ef).squeeze())
         et = self.cnn(x)
         f = torch.concat([ef,et],-1)
-        return F.normalize(f)
+        return F.normalize(f), out_ft
 
 class tf_decoder(nn.Module):
     def __init__(self, configs):
         super(tf_decoder, self).__init__()
-        self.nn = nn.LayerNorm([3, 128],eps=1e-04)
-        self.nn2 = nn.LayerNorm([3, 128],eps=1e-04)
+        self.input_channels, self.sequence_len = configs.input_channels, configs.sequence_len
+        self.nn = nn.LayerNorm([self.input_channels, self.sequence_len],eps=1e-04)
         self.fc1 = nn.Linear(64, 3*128)
-        self.convT = torch.nn.ConvTranspose1d(64, 128,3, stride=1)
+        self.convT = torch.nn.ConvTranspose1d(configs.final_out_channels, self.sequence_len, self.input_channels, stride=1)
         self.modes = configs.fourier_modes
         self.conv_block1 = nn.Sequential(
             nn.ConvTranspose1d(configs.final_out_channels, configs.mid_channels, kernel_size=3,
@@ -137,7 +137,7 @@ class tf_decoder(nn.Module):
             nn.BatchNorm1d(configs.mid_channels),
             nn.ReLU(),
             # nn.MaxPool1d(kernel_size=2, stride=2, padding=1),
-            # nn.Dropout(configs.dropout)
+            nn.Dropout(configs.dropout)
         )
         self.conv_block2 = nn.Sequential(
             nn.ConvTranspose1d(configs.mid_channels, configs.sequence_len , \
@@ -146,16 +146,17 @@ class tf_decoder(nn.Module):
             nn.ReLU(),
             # nn.MaxPool1d(kernel_size=2, stride=2, padding=1)
         )
+        self.lin = nn.Linear(configs.final_out_channels, self.input_channels * self.sequence_len)
         
     def forward(self, f, out_ft):
-        # freq, time = f.chunk(2,dim=1)
         x_low = self.nn(torch.fft.irfft(out_ft, n=128))
         et = f[:,self.modes:]
-        x_high = self.conv_block1(et.unsqueeze(2))
-        x_high = self.conv_block2(x_high).permute(0,2,1)
+        # x_high = self.conv_block1(et.unsqueeze(2))
+        # x_high = self.conv_block2(x_high).permute(0,2,1)
         # x_high = self.nn2(F.gelu((self.fc1(time).reshape(-1, 3, 128))))
         # print(x_low.shape, time.shape)
-        # x_high = self.nn2(F.relu(self.convT(time.unsqueeze(2))).permute(0,2,1))
+        x_high = self.nn(F.relu(self.convT(et.unsqueeze(2))).permute(0,2,1))
+        # x_high = self.nn(F.relu(self.lin(et).reshape(-1,  self.input_channels, self.sequence_len)))
         return x_low + x_high
 
 class RAINCOAT(Algorithm):
@@ -187,12 +188,12 @@ class RAINCOAT(Algorithm):
     def update(self, src_x, src_y, trg_x):
   
         self.optimizer.zero_grad()
-        src_feat = self.feature_extractor(src_x)
-        trg_feat = self.feature_extractor(trg_x)
-        # src_recon = self.decoder(src_feat, self.feature_extractor.recons)
-        # trg_recon = self.decoder(trg_feat, out)
-        # recons = 1e-4*(self.recons(src_recon, src_x) + self.recons(trg_recon, src_x))
-        # recons.backward(retain_graph=True)
+        src_feat, out_s = self.feature_extractor(src_x)
+        trg_feat, out_t = self.feature_extractor(trg_x)
+        src_recon = self.decoder(src_feat, out_s)
+        trg_recon = self.decoder(trg_feat, out_t)
+        recons = 1e-4*(self.recons(src_recon, src_x)+self.recons(trg_recon, trg_x))
+        recons.backward(retain_graph=True)
         dr, _, _ = self.sink(src_feat, trg_feat)
         sink_loss = 1 *dr
         sink_loss.backward(retain_graph=True)
@@ -206,88 +207,13 @@ class RAINCOAT(Algorithm):
     
     def correct(self,src_x, src_y, trg_x):
         self.coptimizer.zero_grad()
-        src_feat, out = self.encoder(src_x)
-        trg_feat, out = self.encoder(trg_x)
-        src_recon = self.decoder(src_feat, out)
-        trg_recon = self.decoder(trg_feat, out)
-        recons = self.recons(trg_recon, trg_x)+self.recons(src_recon, src_x)
+        src_feat, out_s = self.feature_extractor(src_x)
+        trg_feat, out_t = self.feature_extractor(trg_x)
+        src_recon = self.decoder(src_feat, out_s)
+        trg_recon = self.decoder(trg_feat, out_t)
+        recons = self.recons(trg_recon, trg_x) + 0.1*self.recons(src_recon, src_x)
         recons.backward()
         self.coptimizer.step()
         return {'recon': recons.item()}
-    
-
-# class TFAC(Algorithm):
-#     """
-#     TFAC: Time Frequency Domain Adaptation with Correct
-#     """
-#     def __init__(self, configs, hparams, device):
-#         super(TFAC, self).__init__(configs)
-#         self.encoder = tf_encoder(configs).to(device)
-#         self.decoder = tf_decoder(configs).to(device)
-#         # self.classifier = ResClassifier_MME(configs).to(device)
-#         self.classifier = classifier(configs).to(device)
-#         # self.classifier.weights_init()
-        
-#         self.optimizer = torch.optim.Adam(
-#             list(self.encoder.parameters()) + \
-#                 # list(self.decoder.parameters())\
-#                 list(self.classifier.parameters()),
-#             lr=hparams["learning_rate"],
-#             weight_decay=hparams["weight_decay"]
-#         )
-#         self.coptimizer = torch.optim.Adam(
-#             list(self.encoder.parameters())+list(self.decoder.parameters()),
-#             lr=1*hparams["learning_rate"],
-#             weight_decay=hparams["weight_decay"]
-#         )
-            
-#         self.hparams = hparams
-        
-#         # self.loss_func = losses.TripletMarginLoss()
-#         self.recons = nn.L1Loss(reduction='sum').to(device)
-#         # self.recons = nn.MSELoss(reduction='sum').to(device)
-#         self.pi = torch.acos(torch.zeros(1)).item() * 2
-#         self.loss_func = losses.ContrastiveLoss(pos_margin=0.5)
-#         # self.loss_func = OrthogonalProjectionLoss(gamma=0.5)
-#         self.sink = SinkhornDistance(eps=5e-3, max_iter=500)
-        
-#     def update(self, src_x, src_y, trg_x):
-  
-#         self.optimizer.zero_grad()
-#         # self.classifier.weight_norm()
-#         src_feat, out = self.encoder(src_x)
-#         trg_feat, out = self.encoder(trg_x)
-#         # src_recon = self.decoder(src_feat, out)
-#         # trg_recon = self.decoder(trg_feat, out)
-#         # recons = self.recons(src_recon, src_x)+self.recons(trg_recon, src_x)
-#         # recons.backward(retain_graph=True)
-#         dr, _, _ = self.sink(src_feat, trg_feat)
-#         sink_loss = 1 *dr
-#         sink_loss.backward(retain_graph=True)
-#         # 
-#         # loss=  3*sink_loss +  recons
-#         lossinner = 1 * self.loss_func(src_feat, src_y) 
-#         # lossinner.backward(retain_graph=True)
-#         # lossinner = 2 * self.op_loss (src_feat, src_y)
-#         lossinner.backward(retain_graph=True)
-#         src_pred = self.classifier(src_feat)
-        
-#         loss_cls = 1 *self.cross_entropy(src_pred, src_y) 
-#         loss_cls.backward(retain_graph=True)
-#         # loss = 10 * sink_loss + loss_cls + 1*lossinner
-#         # loss.backward()
-#         self.optimizer.step()
-#         return {'Src_cls_loss': loss_cls.item(),'Sink': sink_loss.item(), 'inner': lossinner.item()}
-    
-#     def correct(self,src_x, src_y, trg_x):
-#         self.coptimizer.zero_grad()
-#         src_feat, out = self.encoder(src_x)
-#         trg_feat, out = self.encoder(trg_x)
-#         src_recon = self.decoder(src_feat, out)
-#         trg_recon = self.decoder(trg_feat, out)
-#         recons = self.recons(src_recon, src_x)+self.recons(trg_recon, src_x)
-#         recons.backward()
-#         self.coptimizer.step()
-#         return {'recon': recons.item()}
     
 
