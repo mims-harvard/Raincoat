@@ -53,7 +53,7 @@ Our main model architecture can be found [here](models/models.py).
 
 ### Algorithm 
 Our training algorithm can be found [here](algorithms/RAINCOAT.py). 
-The implementation is build upon [Adatime](https://arxiv.org/abs/2203.08321). 
+The implementation is build upon a published benchmark work [Adatime](https://arxiv.org/abs/2203.08321). 
 ## Training procedure
 
 The experiments are organised in a hierarchical way such that:
