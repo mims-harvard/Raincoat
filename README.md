@@ -1,12 +1,10 @@
+## Overview of Raincoat
 
-## Requirmenets:
-- Python3
-- Pytorch==1.7
-- Numpy==1.20.1
-- scikit-learn==0.24.1
-- Pandas==1.2.4
-- skorch==0.10.0 
-- openpyxl==3.0.7 
+The transfer of models trained on labeled datasets from a source domain to unlabeled target domains is facilitated by unsupervised domain adaptation (UDA). However, when dealing with complex time series models, transferability becomes challenging due to differences in dynamic temporal structures between domains, which can result in feature shifts and gaps in time and frequency representations. Additionally, the label distributions in the source and target domains can be vastly different, making it difficult for UDA to address label shifts and recognize labels unique to the target domain. Raincoat is a domain adaptation method for time series that can handle both feature and label shifts.
+
+<p align="center">
+<img src="https://zitniklab.hms.harvard.edu/img/Raincoat-method.png">
+</p>
 
 ## Datasets
 ### Loading and Preparing Benchmark Datasets
@@ -20,6 +18,15 @@ Since "NewData" has several domains, each domain should be split into train/test
 The structure of data files should in dictionary form as follows:
 `train.pt = {"samples": data, "labels: labels}`, and similarly for `test.pt`.
 
+## Requirements
+- Python3
+- Pytorch==1.7
+- Numpy==1.20.1
+- scikit-learn==0.24.1
+- Pandas==1.2.4
+- skorch==0.10.0 
+- openpyxl==3.0.7 
+
 #### Configurations
 Next, you have to add a class with the name NewData in the `configs/data_model_configs.py` file. 
 You can find similar classes for existing datasets as guidelines. 
@@ -27,7 +34,6 @@ Also, you have to specify the cross-domain scenarios in `self.scenarios` variabl
 
 Last, you have to add another class with the name NewData in the `configs/hparams.py` file to specify
 the training parameters.
-
 
 ## Closed-Set Domain Adaptation Algorithms
 ### Baselines
@@ -47,7 +53,8 @@ the training parameters.
 - [UniOT](https://arxiv.org/abs/2210.17067)
 
 
-## RAINCOAT
+## Raincoat Implementation
+
 ### Model
 Our main model architecture can be found [here](models/models.py). 
 
@@ -62,7 +69,7 @@ The experiments are organised in a hierarchical way such that:
 - For example, if we want to experiment different UDA methods with CNN backbone, we can assign
 `--experiment_description CNN_backnones --run_description DANN` and `--experiment_description CNN_backnones --run_description DDC` and so on.
 
-### Training a model
+### Training a Model
 
 To train a model:
 
@@ -73,4 +80,18 @@ python main.py  --experiment_description exp1  \
                 --dataset HHAR \
                 --backbone CNN \
                 --num_runs 5 \
+```
+
+## Additional Resources
+
+- [Paper](https://arxiv.org/abs/2302.03133)
+- [Project Website](https://zitniklab.hms.harvard.edu/projects/Raincoat/)
+
+```
+@inproceedings{he2023domain,
+title = {Domain Adaptation for Time Series Under Feature and Label Shifts},
+author = {He, Huan and Queen, Owen and Koker, Teddy and Cuevas, Consuelo and Tsiligkaridis, Theodoros and Zitnik, Marinka},
+booktitle = {https://arxiv.org/abs/2302.03133},
+year      = {2023}
+}
 ```
