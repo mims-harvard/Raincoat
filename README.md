@@ -37,7 +37,7 @@ the training parameters.
 - [HoMM](https://arxiv.org/pdf/1912.11976.pdf)
 - [CoDATS](https://arxiv.org/pdf/2005.10996.pdf)
 - [AdvSKM](https://www.ijcai.org/proceedings/2021/0378.pdf)
-- [CLUDA](https://www.ijcai.org/proceedings/2021/0378.pdf)
+- [CLUDA](https://openreview.net/forum?id=xPkJYRsQGM)
 
 ## Universal Domain Adaptation Algorithms
 ### Existing Algorithms
