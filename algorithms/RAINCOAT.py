@@ -197,8 +197,8 @@ class RAINCOAT(Algorithm):
         dr, _, _ = self.sink(src_feat, trg_feat)
         sink_loss = 1 *dr
         sink_loss.backward(retain_graph=True)
-        lossinner = 1 * self.loss_func(src_feat, src_y) 
-        lossinner.backward(retain_graph=True)
+        # lossinner = 1 * self.loss_func(src_feat, src_y) 
+        # lossinner.backward(retain_graph=True)
         src_pred = self.classifier(src_feat)
         loss_cls = 1 *self.cross_entropy(src_pred, src_y) 
         loss_cls.backward(retain_graph=True)
