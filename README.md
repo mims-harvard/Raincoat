@@ -1,5 +1,4 @@
-### Authors: [Huan He](https://hehuannb.github.io/) (hehuannb@gmail.com), [Owen Queen](https://www.linkedin.com/in/owen-queen-0348561a2/), [Teddy Koker](https://teddykoker.com/), [Consuelo Cuevas](https://consuelo-cuevas.editorx.io/home) <br/>
-###  [Theodoros Tsiligkaridis](https://github.com/mims-harvard/Raindrop)(ttsili@ll.mit.edu), [Marinka Zitnik](https://zitniklab.hms.harvard.edu/) (marinka@hms.harvard.edu)
+### Authors: [Huan He](https://hehuannb.github.io/) (hehuannb@gmail.com), [Owen Queen](https://www.linkedin.com/in/owen-queen-0348561a2/), [Teddy Koker](https://teddykoker.com/), [Consuelo Cuevas](https://consuelo-cuevas.editorx.io/home), [Theodoros Tsiligkaridis](https://github.com/mims-harvard/Raindrop)(ttsili@ll.mit.edu), [Marinka Zitnik](https://zitniklab.hms.harvard.edu/) (marinka@hms.harvard.edu)
 
 ### [Project website](https://zitniklab.hms.harvard.edu/projects/Raincoat/)
 
@@ -90,6 +89,7 @@ python main.py  --experiment_description exp1  \
 ```
 
 ### Citation
+If you find *Raincoat* useful for your research, please consider citing this paper:
 
 ```
 @inproceedings{he2023domain,

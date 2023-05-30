@@ -206,7 +206,6 @@ class cross_domain_trainer(object):
         self.trg_true_labels = np.array([])
 
         with torch.no_grad():
-            # for data, labels in self.trg_test_dl:
             for data, labels in self.trg_test_dl:
                 data = data.float().to(self.device)
                 labels = labels.view((-1)).long().to(self.device)
@@ -229,9 +228,6 @@ class cross_domain_trainer(object):
     def eval(self, final=False):
         feature_extractor = self.algorithm.feature_extractor.to(self.device)
         classifier = self.algorithm.classifier.to(self.device)
-        # self.algorithm.ema.apply_shadow()
-        # # evaluate
-        # self.algorithm.ema.restore()
         if final == True:
             feature_extractor.load_state_dict(torch.load(self.fpath))
             classifier.load_state_dict(torch.load(self.cpath))
@@ -244,7 +240,6 @@ class cross_domain_trainer(object):
         self.trg_true_labels = np.array([])
 
         with torch.no_grad():
-            # for data, labels in self.trg_test_dl:
             for data, labels in self.trg_test_dl:
                 data = data.float().to(self.device)
                 labels = labels.view((-1)).long().to(self.device)
@@ -275,9 +270,6 @@ class cross_domain_trainer(object):
         self.trg_train_dl, self.trg_test_dl = data_generator(self.data_path, trg_id, self.dataset_configs,
                                                              self.hparams)
         self.few_shot_dl = few_shot_data_generator(self.trg_test_dl)
-
-        # self.src_train_dl = generator_percentage_of_data(self.src_train_dl_)
-        # self.trg_train_dl = generator_percentage_of_data(self.trg_train_dl_)
 
     def create_save_dir(self):
         if not os.path.exists(self.save_dir):
