@@ -64,7 +64,7 @@ class classifier(nn.Module):
         super(classifier, self).__init__()
         model_output_dim = configs.out_dim 
         self.logits = nn.Linear(model_output_dim, configs.num_classes, bias=False)
-        self.tmp= 0.05
+        self.tmp= 0.1
 
     def forward(self, x):
         predictions = self.logits(x)/self.tmp

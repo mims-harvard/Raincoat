@@ -105,20 +105,19 @@ class tf_encoder(nn.Module):
         self.width = configs.input_channels
         self.channel = configs.input_channels
         self.fl =   configs.sequence_len
-        self.fc0 = nn.Linear(self.channel, self.width) # input channel is 2: (a(x), x)
         self.conv0 = SpectralConv1d(self.width, self.width, self.modes1,self.fl)
-        self.nn2 = nn.LayerNorm(self.modes1)
-        self.adaptive_pool = nn.AdaptiveAvgPool1d(1)
+        # self.bn_freq = nn.BatchNorm1d(configs.fourier_modes)
+        self.bn_freq = nn.LayerNorm(self.modes1)
         self.cnn = CNN(configs).to('cuda')
         self.con1 = nn.Conv1d(self.width, 1, kernel_size=3 ,
                   stride=configs.stride, bias=False, padding=(3 // 2))
-        self.lin = nn.Linear(self.modes1+configs.final_out_channels, configs.out_dim)
+        self.lin = nn.Linear(self.modes1 + configs.final_out_channels, configs.out_dim)
         self.recons = None
 
     def forward(self, x):
 
         ef, out_ft = self.conv0(x)
-        ef = self.nn2(self.con1(ef).squeeze())
+        ef = self.bn_freq(self.con1(ef).squeeze())
         et = self.cnn(x)
         f = torch.concat([ef,et],-1)
         return F.normalize(f), out_ft
@@ -168,14 +167,14 @@ class RAINCOAT(Algorithm):
         
         self.optimizer = torch.optim.Adam(
             list(self.feature_extractor.parameters()) + \
-                # list(self.decoder.parameters())+\
+                list(self.decoder.parameters())+\
                 list(self.classifier.parameters()),
             lr=hparams["learning_rate"],
             weight_decay=hparams["weight_decay"]
         )
         self.coptimizer = torch.optim.Adam(
             list(self.feature_extractor.parameters())+list(self.decoder.parameters()),
-            lr=0.5*hparams["learning_rate"],
+            lr=1*hparams["learning_rate"],
             weight_decay=hparams["weight_decay"]
         )
             
@@ -192,13 +191,11 @@ class RAINCOAT(Algorithm):
         trg_feat, out_t = self.feature_extractor(trg_x)
         src_recon = self.decoder(src_feat, out_s)
         trg_recon = self.decoder(trg_feat, out_t)
-        recons = 1e-4*(self.recons(src_recon, src_x)+self.recons(trg_recon, trg_x))
+        recons = 1e-4 * (self.recons(src_recon, src_x) + self.recons(trg_recon, trg_x))
         recons.backward(retain_graph=True)
         dr, _, _ = self.sink(src_feat, trg_feat)
         sink_loss = 1 *dr
         sink_loss.backward(retain_graph=True)
-        # lossinner = 1 * self.loss_func(src_feat, src_y) 
-        # lossinner.backward(retain_graph=True)
         src_pred = self.classifier(src_feat)
         loss_cls = 1 *self.cross_entropy(src_pred, src_y) 
         loss_cls.backward(retain_graph=True)
@@ -211,7 +208,7 @@ class RAINCOAT(Algorithm):
         trg_feat, out_t = self.feature_extractor(trg_x)
         src_recon = self.decoder(src_feat, out_s)
         trg_recon = self.decoder(trg_feat, out_t)
-        recons = self.recons(trg_recon, trg_x) + 0.1*self.recons(src_recon, src_x)
+        recons = 1e-4 * (self.recons(trg_recon, trg_x) + self.recons(src_recon, src_x))
         recons.backward()
         self.coptimizer.step()
         return {'recon': recons.item()}
