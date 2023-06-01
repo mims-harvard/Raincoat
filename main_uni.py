@@ -1,7 +1,7 @@
 import os
 import argparse
 import warnings
-from trainer_uni import cross_domain_trainer
+from trainers.trainer_uni import cross_domain_trainer
 import sklearn.exceptions
 import pickle
 from sklearn.manifold import TSNE
