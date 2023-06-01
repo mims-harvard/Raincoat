@@ -12,7 +12,6 @@ from sklearn.metrics import classification_report, accuracy_score
 from dataloader.dataloader import data_generator, few_shot_data_generator, generator_percentage_of_data
 from configs.data_model_configs import get_dataset_class
 from configs.hparams import get_hparams_class
-from configs.sweep_params import sweep_alg_hparams
 from algorithms.utils import fix_randomness, copy_Files, starting_logs, save_checkpoint, _calc_metrics
 from algorithms.utils import calc_dev_risk, calculate_risk
 from algorithms.algorithms import get_algorithm_class

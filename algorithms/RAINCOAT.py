@@ -203,7 +203,7 @@ class RAINCOAT(Algorithm):
         loss_cls = 1 *self.cross_entropy(src_pred, src_y) 
         loss_cls.backward(retain_graph=True)
         self.optimizer.step()
-        return {'Src_cls_loss': loss_cls.item(),'Sink': sink_loss.item(), 'inner': lossinner.item()}
+        return {'Src_cls_loss': loss_cls.item(),'Sink': sink_loss.item()}
     
     def correct(self,src_x, src_y, trg_x):
         self.coptimizer.zero_grad()
