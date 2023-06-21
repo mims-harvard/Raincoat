@@ -8,7 +8,6 @@ src_only_saved_models/
 data/
 *.py[cod]
 *.pt
-*.txt
 *.arff
 *.png
 *.pkl
