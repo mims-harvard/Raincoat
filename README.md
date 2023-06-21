@@ -20,10 +20,16 @@ First, clone the GitHub repository:
 
 ```
 git clone https://github.com/mims-harvard/Raincoat
-cd SHEPHERD
+cd Raincoat
 ```
 
 ### 2: Set Up Environment
+
+To install the core environment dependencies of Raincoat, use requirement.txt:
+```
+pip: -r requirements.txt
+```
+
     - Python3
     - Pytorch==1.7
     - Numpy==1.20.1
@@ -115,7 +121,10 @@ If you find *Raincoat* useful for your research, please consider citing this pap
 @inproceedings{he2023domain,
 title = {Domain Adaptation for Time Series Under Feature and Label Shifts},
 author = {He, Huan and Queen, Owen and Koker, Teddy and Cuevas, Consuelo and Tsiligkaridis, Theodoros and Zitnik, Marinka},
-booktitle = {https://arxiv.org/abs/2302.03133},
+booktitle = {International Conference on Machine Learning},
 year      = {2023}
 }
 ```
+
+### Lisence
+Raincoat codebase is under MIT license. For individual dataset usage, please refer to the dataset license found in the website.
